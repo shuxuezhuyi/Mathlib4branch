@@ -15,17 +15,11 @@ noncomputable def Function.toval' (f : s → β) : α → β :=
     if hx : x ∈ s then f ⟨x, hx⟩
     else Classical.choice ‹_›
 
--- def id_univ (x : α) : (univ : Set α) := ⟨x, by trivial⟩
-
--- theorem id_univ_is_inv_val : (fun (x : (univ : Set α)) => x.val) ∘ id_univ = id := rfl
-
 namespace Set2Set
 
 /-! ### Equivalent definitions -/
 
 theorem toval_eq_toval (f : s → t) : f.toval = (Subtype.val ∘ f).toval' := rfl
-
--- #check Equiv.Set.univ β
 
 theorem toval_eq_toval' (f : s → β) : f.toval' = ((Equiv.Set.univ β).invFun ∘ f).toval := rfl
 
@@ -80,10 +74,3 @@ theorem toval_bijOn' {f : s → β} : Bijective f ↔ BijOn f.toval' s univ := b
 theorem toval_continuous' [TopologicalSpace α] [TopologicalSpace β] {f : s → β} :
     Continuous f ↔ ContinuousOn f.toval' s := by
   rw [@continuousOn_iff_continuous_restrict, ← @toval_eq']
-
--- example {f : s → t} : Surjective f ↔ SurjOn f.toval s t := by
---   rw [toval_eq_extend]
---   rw [@val_surjOn]
---   unfold extend
---   simp [Subtype.coe_injective]
---   constructor

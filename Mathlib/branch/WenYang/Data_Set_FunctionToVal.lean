@@ -5,7 +5,6 @@ Authors: Wen Yang
 -/
 import Mathlib.Tactic
 -- import Mathlib.Topology.ContinuousOn
--- 文件名叫 FunctionToVal
 /-!
 # Convert functions between subsets to functions between types
 
@@ -39,26 +38,14 @@ open Set Function
 
 variable {s : Set α} {t : Set β} [Nonempty β]
 
--- theorem BijOn.membership (hf_bijOn : BijOn f s t) :
-
--- 我不明白这个定义里的 [DecidablePred (· ∈ s)] 为什么删掉会影响后面的 Function.toval.eq
 /-- Given a function `f : s → t`, extend it to `f.toval : α → β` by
 filling in the undefined parts with some constant function.
 Notice that this constant function is not uniquely determined by `f`.-/
 noncomputable def Function.toval (f : s → t) : α → β :=
-  -- let y := ht.some
-  -- let y : β := (Set.nonempty_coe_sort.1 ‹_›).some
-  -- let y : β := Classical.choice ‹_›
-  -- haveI : DecidablePred (· ∈ s) := Classical.propDecidable _
   fun x =>
     haveI : Decidable (x ∈ s) := Classical.propDecidable _
     if hx : x ∈ s then (f ⟨x, hx⟩).val
     else Classical.choice ‹_›
-
--- #check Subtype.val ∘ (_ : s → t)
--- #check function_f.toval
--- #check s.restrict (_ : s → t).toval
--- #check (_ : s → t)
 
 namespace Set2Set
 
@@ -73,16 +60,6 @@ theorem toval_mapsto (f : s → t) : MapsTo f.toval s t := by
   intro x hx
   unfold toval
   aesop
-
--- 不实用！
--- theorem toval_codomain_mem {f : s → t} (ha : a ∈ s) (hfab : f.toval a = b) : b ∈ t := by
---   unfold toval at hfab
---   aesop
-
--- 这样一点都不实用，不如用下面的 `toval_mem_iff`
--- theorem toval_mem' {f : s → t} (ha : a ∈ s) (hfab : f.toval a = b) : f ⟨a, ha⟩ = ⟨b, toval_codomain_mem ha hfab⟩ := by
---   unfold toval at hfab
---   aesop
 
 theorem toval_mem_iff {f : s → t} : f a = b ↔ f.toval a.val = b.val := by
   constructor
@@ -147,22 +124,5 @@ end Set2Set
 example (ha : a ∉ s) (hb : b ∉ s) (f : s → t) : f.toval a = f.toval b := by
   unfold toval
   aesop
-
--- structure toval (s : Set α) (t : Set β) where
---   toFun : α → β
---   mapsto : MapsTo toFun s t
-
--- noncomputable def Function.toval (f : s → t) : toval s t where
---   toFun := fun x =>
---     if hx : x ∈ s then (f ⟨x, hx⟩).val
---     else ht.some
---   mapsto := by
---     intro x hx
---     aesop
-
--- instance : CoeFun (toval s t) fun _ => α → β :=
---   ⟨toval.toFun⟩
-
--- theorem Function.toval.eq (f : s → t) [DecidablePred (· ∈ s)] : (Subtype.val ∘ f) = (s.restrict f.toval) := by trivial
 
 -- #minimize_imports

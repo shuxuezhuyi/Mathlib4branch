@@ -28,18 +28,3 @@ theorem StrictMonoOn.Icc_singleton {α : Type*} {a b : α} [PartialOrder α]
   by_contra' h_ne
   replace hab : a < b := h_ne.lt_of_le hab
   exact (lt_trans (hf ha hb hab) (hf' ha hb hab)).false
-  -- by_cases h : (Icc a b).Nonempty
-  -- · have hab : a ≤ b := nonempty_Icc.mp h
-  --   have ha : a ∈ Icc a b := left_mem_Icc.mpr hab
-  --   have hb : b ∈ Icc a b := right_mem_Icc.mpr hab
-  --   refine Or.inl ?_
-  --   by_contra' h2
-  --   replace hab : a < b := h2.lt_of_le hab
-  --   exact (lt_trans (hf ha hb hab) (hf' ha hb hab)).false
-  -- · refine Or.inr ?_
-  --   intro x
-  --   revert h
-  --   contrapose!
-  --   simp only [forall_true_left]
-  --   use x.val
-  --   exact x.property

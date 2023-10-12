@@ -19,9 +19,6 @@ Sometimes a mapping `f : (a, b) → β` can be naturally extended to `[a, b]`.
 
 ## Main statements
 
-* `StrictMonoOn.Ioo_extend_Icc` and `StrictAntiOn.Ioo_extend_Icc`:
-A strictly monotone function on an open interval can be extended to be
-strictly monotone on the closed interval.
 -/
 
 -- 标题 : feat(Topology/Algebra/Order): extend function on `Ioo` to `Icc`
@@ -109,84 +106,6 @@ theorem Function.update.image (f : α → β) (ha : a ∉ s) : (update f a b) ''
 
 end update
 
--- section StrictMonoOn
--- variable [PartialOrder α] [PartialOrder β]  {a b : α} {c d : β}
--- -- 在开区间上严格单调递增的函数可以延拓为闭区间上严格单调递增的函数
--- /-- A strictly monotone (increasing) function on an open interval can be extended
--- to be strictly monotone (increasing) on the closed interval.-/
--- theorem StrictMonoOn.Ioo_extend_Icc (hf_mono : StrictMonoOn f (Ioo a b))
---     (hf_mapsto : f '' (Ioo a b) ⊆ Ioo c d) (hab : a < b) (hcd : c < d) :
---     ∃ g, StrictMonoOn g (Icc a b) ∧
---     EqOn f g {a, b}ᶜ ∧
---     g '' (Icc a b) = f '' (Ioo a b) ∪ {c, d} ∧
---     g = update (update f a c) b d := by
---   let g : α → β := update (update f a c) b d
---   use g
---   have ha : a ∉ Ioo a b := by simp
---   have hg_mono : StrictMonoOn g (Icc a b) := by
---     have ha' : Ico a b = (Ioo a b) ∪ {a} := (Ioo_union_left hab).symm
---     have hf_mono' : StrictMonoOn (update f a c) (Ico a b) := by
---       rw [ha']
---       refine hf_mono.update_strict_lower_bound ?mapsto ?ha
---       · exact hf_mapsto.trans Ioo_subset_Ioi_self
---       · aesop
---     have hf_mapsto' : (update f a c) '' (Ico a b) ⊆ Ico c d := by
---       rw [ha', image_union]
---       simp only [(update.EqOn f ha).image_eq]
---       rw [← Ioo_union_left hcd]
---       simp [insert_subset_insert hf_mapsto]
---     have : (update f a c) '' (Ico a b) ⊆ Iio d := hf_mapsto'.trans Ico_subset_Iio_self
---     have hb : ∀ x ∈ Ico a b, x < b := by simp
---     have hf_mono'' := hf_mono'.update_strict_upper_bound this hb
---     replace : Ico a b ∪ {b} = Icc a b := Ico_union_right hab.le
---     rw [this] at hf_mono''
---     exact hf_mono''
---   have hg_eq : EqOn f g {a, b}ᶜ := by
---     intro x hx
---     unfold_let g
---     unfold update
---     aesop
---   have hg_image : g '' Icc a b = f '' Ioo a b ∪ {c, d} := by
---     unfold_let g
---     have hb : b ∉ Ico a b := by simp
---     rw [← Ico_union_right hab.le, update.image (update f a c) hb,
---         ← Ioo_union_left hab, update.image f ha]
---     have := insert_comm d c (f '' Ioo a b)
---     simp [this]
---   trivial
-
-
-
--- -- 在开区间上严格单调递减的函数可以延拓为闭区间上严格单调递减的函数
--- /-- A strictly antitone (decreasing) function on an open interval can be extended
--- to be strictly antitone (decreasing) on the closed interval.-/
--- theorem StrictAntiOn.Ioo_extend_Icc (hf_mono : StrictAntiOn f (Ioo a b))
---     (hf_mapsto : f '' (Ioo a b) ⊆ Ioo c d) (hab : a < b) (hcd : c < d) :
---     ∃ g, StrictAntiOn g (Icc a b) ∧
---     EqOn f g {a, b}ᶜ ∧
---     g '' (Icc a b) = f '' (Ioo a b) ∪ {c, d} ∧
---     g = update (update f a d) b c := by
---   let g : α → OrderDual β := f
---   have hg_mono : StrictMonoOn g (Ioo a b) := hf_mono
---   have hg_mapsto : g '' (Ioo a b) ⊆ Ioo (toDual d) (toDual c) := by aesop
---   choose G hG using hg_mono.Ioo_extend_Icc hg_mapsto hab hcd
---   let F : α → β := G
---   use F
---   constructor
---   · aesop
---   · constructor
---     · aesop
---     · constructor
---       · rw [hG.2.2.1]
---         have := insert_comm (toDual d) (toDual c) ((fun a ↦ f a) '' Ioo a b)
---         aesop
---       · aesop
-
-
-
--- end StrictMonoOn
--- LocalHomeomorph 的定义太奇怪了
-
 open Set2Set
 
 section StrictMonoOn
@@ -197,12 +116,6 @@ variable [LinearOrder α] [TopologicalSpace α] [OrderTopology α]
 -- 标题 : feat(Topology/Algebra/Order): continuously extend function strictly monotone on `Ioo` to `Icc`
 
 -- A strictly monotone function on an open interval can be continuously extended to the closed interval.
-
--- TODO: 条件 `StrictMonoOn f` 应当减弱为 `MonotoneOn f`, 但需要别的证明思路，因为下面用到了 `StrictMonoOn.orderIso`
--- 在开区间上严格单调递增的函数可以连续延拓到闭区间上
-/- TODO: The condition `StrictMonoOn f` should be weakened to `MonotoneOn f`,
-but we need a different proof since `StrictMonoOn.orderIso` is used below.-/
--- 删掉上述 TODO
 
 /-- Extend strictly monotone (increasing) functions between open intervals to homeomorphisms
 between the closed intervals.-/
@@ -308,80 +221,4 @@ theorem Homeomorph.Ioo_extend_Icc (f : (Ioo a b) ≃ₜ (Ioo c d)) (hab : a < b)
   | inr hf_mono =>
     exact StrictAntiOn.Ioo_continuous_extend_Icc hf_mono hf_mapsto hab hcd
 
-  -- let g' := f.invFun
-  -- have hg_c' : ContinuousOn g'.toval (Ioo c d) := by
-  --   rw [← toval_continuous]
-  --   exact f.continuous_invFun
-  -- have hg_inj' : InjOn g'.toval (Ioo c d) := by
-  --   rw [← toval_injOn]
-  --   exact f.symm.injective
-  -- have hg_bij' : BijOn g'.toval (Ioo c d) (Ioo a b) := by
-  --   rw [← toval_bijOn]
-  --   exact f.symm.bijective
-  -- have hg_mapsto' : g'.toval '' (Ioo c d) = (Ioo a b) := hg_bij'.image_eq
-  -- choose G' hG' using hg_c'.injOn_Ioo_extend_Icc hg_mapsto' hg_inj' hab hcd
-
 end ContinuousOn
--- /-- Another version of `LocalEquiv`, but focus on subsets.-/
--- structure SubsetEquiv {α β : Type*} (source : Set α) (target : Set β) where
---   /-- The global function which has a local inverse. Its value outside of the `source` subset is
---   irrelevant. -/
---   toFun : α → β
---   /-- The local inverse to `toFun`. Its value outside of the `target` subset is irrelevant. -/
---   invFun : β → α
---   /-- The proposition that elements of `source` are mapped to elements of `target`. -/
---   map_source' : MapsTo toFun source target
---   /-- The proposition that elements of `target` are mapped to elements of `source`. -/
---   map_target' : MapsTo invFun target source
---   /-- The proposition that `invFun` is a local left-inverse of `toFun` on `source`. -/
---   left_inv' : ∀ ⦃x⦄, x ∈ source → invFun (toFun x) = x
---   /-- The proposition that `invFun` is a local right-inverse of `toFun` on `target`. -/
---   right_inv' : ∀ ⦃x⦄, x ∈ target → toFun (invFun x) = x
-
--- /-- The domain of the local equivalence. -/
--- def SubsetEquiv.source {α β : Type*} {s : Set α} {t : Set β} (_ : SubsetEquiv s t) : Set α := s
-
--- /-- The codomain of the local equivalence. -/
--- def SubsetEquiv.target {α β : Type*} {s : Set α} {t : Set β} (_ : SubsetEquiv s t) : Set β := t
-
--- -- instance DefEq_LocalEquiv {α β : Type*} {s : Set α} {t : Set β} : CoeOut (SubsetEquiv s t) (LocalEquiv α β) := ⟨
--- --   fun (f : SubsetEquiv s t) => ⟨
--- --     f.toFun,
--- --     f.invFun,
--- --     s,
--- --     t,
--- --     f.map_source',
--- --     f.map_target',
--- --     f.left_inv',
--- --     f.right_inv'
--- --     ⟩
--- --   ⟩
-
--- def SubsetEquiv.toLocalEquiv {α β : Type*} {s : Set α} {t : Set β} (f : SubsetEquiv s t) : (LocalEquiv α β) := ⟨f.toFun, f.invFun, s, t, f.map_source', f.map_target', f.left_inv', f.right_inv'⟩
-
--- instance {α β : Type*} {s : Set α} {t : Set β} : CoeFun (SubsetEquiv s t) fun _ => α → β :=
---   ⟨SubsetEquiv.toFun⟩
-
--- -- theorem SubsetEquiv.injOn {α β : Type*} {s : Set α} {t : Set β} (f : SubsetEquiv s t) : InjOn f s := by
--- --   have : InjOn f f.source := LocalEquiv.injOn f
-
--- -- def SubsetEquiv' {α β : Type*} (source : Set α) (target : Set β) : SubsetEquiv α β where
-
-
--- structure SubsetHomeomorph' {α β : Type*} [TopologicalSpace α]
---   [TopologicalSpace β] (source : Set α) (target : Set β) extends SubsetEquiv source target where
---   continuous_toFun : ContinuousOn toFun source
---   continuous_invFun : ContinuousOn invFun target
-
--- structure SubsetHomeomorph {α β : Type*} [TopologicalSpace α]
---   [TopologicalSpace β] (source : Set α) (target : Set β) extends LocalEquiv α β where
---   continuous_toFun : ContinuousOn toFun source
---   continuous_invFun : ContinuousOn invFun target
-
--- noncomputable def SubsetHomeomorph.Ioo_extend_Icc {α : Type*} [ConditionallyCompleteLinearOrder α]
---     [TopologicalSpace α] [OrderTopology α] [DenselyOrdered α]
---     {β : Type*} [LinearOrder β] [TopologicalSpace β] [OrderClosedTopology β] [DecidableEq α] {a b : α} {c d : β} (f : SubsetHomeomorph (Ioo a b) (Ioo c d)) (hab : a < b) : ∃ (g : α → β), ContinuousOn g (Icc a b) := by
---   have hf_inj : InjOn f.toFun f.source := LocalEquiv.injOn f.toLocalEquiv
---   have : f.source = Ioo a b := by
---   have hf := f.continuous_toFun.StrictMonoOn_of_InjOn_Ioo hab
---   by_cases hg : StrictMonoOn  (Icc a b)
